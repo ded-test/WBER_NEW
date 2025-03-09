@@ -1,0 +1,18 @@
+[project]
+name = "wbep"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Vitaliy Dedhorg",email = "qwertyone120@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi (>=0.115.11,<0.116.0)",
+    "pydantic (>=2.10.6,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
