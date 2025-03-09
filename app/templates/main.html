@@ -2,9 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+    <header>
+        <a class="logo" href="/"><img class="logo" src="/Static/logo.png" alt="logo"></a>
+        <div class="dropdown">
+            {% if button_text == "Sign In" %}
+                <a class="button_login" href="/login">Login</a>
+            {% else %}
+                <a class="button_login" tabindex="0">{{ button_text }}</a>
+                <div class="dropdown-content">
+                    <form action="/settings" method="GET" style="margin: 0;">
+                        <button type="submit" class="settings-button">Settings</button>
+                    </form>
+                    <form action="/logout" method="POST" style="margin: 0;">
+                        <button type="submit" class="logout-button">Log out</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </header>
 
+    <div class="container">
+        <div class="left-area">
+            <div id="calendar"></div>
+        </div>
+        <div class="right-area">
+            <div class="top-section">
+                <h2>Weather in <a id="city" href="/settings">{{city}}</a></h2>
+                <div id="weather-div">
+                    <div id="weather-result">Select a date to see the weather forecast.</div>
+                </div>
+            </div>
+
+            <div class="bottom-section">
+                <h2>Events for <span id="selected-date">selected date</span></h2>
+
+                <!-- Сообщение о том, что событий нет -->
+                <div id="no-events-message" style="display: none;">
+                    <p id="text_no_event">No events on this date.</p>
+                    <button id="createEventButton">Create Event</button>
+                </div>
+
+                <!-- Список событий, который будет показываться, если они есть -->
+                <div id="event-list" style="display: none;">
+                    <ul id="events-container"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Event Menu -->
+    <div class="blurred-background" id="blurred-background" style="display: none;"></div>
+    <div class="create-event-menu" id="createEventMenu" style="display: none;">
+
+        <h3>Create event on <span id="displayed-date">selected date</span> </h3>
+        <form id="createEventForm" method="POST" action="/register_event">
+            <input type="hidden" id="selected-date-input" name="selected_date" placeholder="Date">
+            <input type="text" id="event-name" name="event_name" placeholder="Name" required>
+            <label>Where the event will take place?</label>
+
+            <div class="radio-group">
+                <label for="indoor">
+                    <input type="radio" id="indoor" name="location" value="indoor"> Indoors
+                </label>
+                <label for="outdoor">
+                    <input type="radio" id="outdoor" name="location" value="outdoor"> Outside
+                </label>
+            </div>
+            <textarea id="event-description" name="event_description" placeholder="Description"></textarea>
+            <div class="buttons">
+                <button id="cancelEventButton">Cancel</button>
+                <button id="submitEventButton" type="submit">Create</button>
+            </div>
+        </form>
+
+    </div>
+
+    <script src="/Static/script_main.js"></script>
 </body>
 </html>
