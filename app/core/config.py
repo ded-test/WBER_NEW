@@ -1,13 +1,11 @@
 from pydantic import BaseModel
-import os
 from dotenv import load_dotenv
+import os
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
-
-API_KEY_WEATHER = os.getenv("API_KEY_WEATHER")
-
-SECRET_KEY = os.getenv("SECRET_KEY")
+load_dotenv("../../.env")
 
 class UserSettings(BaseModel):
-    SECRET_KEY: str = SECRET_KEY
-    API_KEY_WEATHER: str = API_KEY_WEATHER
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "default_secret_key")
+    API_KEY_WEATHER: str = os.getenv("API_KEY_WEATHER", "default_api_key")
+
+settings = UserSettings()

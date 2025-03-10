@@ -54,16 +54,14 @@ class UserCRUD:
             return {"error": f"Database error: {str(e)}"}
 
 
-class EventCRUD:
-    def __init__(self, db: Session):
-        self.db = db
-
-    def create_event(self, user_id: int, event_date: str, name: str, description: str, category: ):
-        try:
-
-
-    def update_event(self):
-
-    def delete_event(self):
-
-    def get_event(self):
+# class EventCRUD:
+#     def __init__(self, db: Session):
+#         self.db = db
+#
+#     def create_event(self):
+#
+#     def update_event(self):
+#
+#     def delete_event(self):
+#
+#     def get_event(self):
