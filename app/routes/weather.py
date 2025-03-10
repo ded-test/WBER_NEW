@@ -4,48 +4,48 @@ from app.db import *
 
 router = APIRouter()
 
-@router.get("/weather")
-async def get_weather(
-    request: Request,
-    date: str,
-    current_user: str = Depends(get_current_user)
-    ):
-
-    city = await get_user_city()
-
-    if not city:
-        raise HTTPException(status_code=404, detail="User's city not found.")
-
-    url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric&lang=en"
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url)
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail="Ошибка получения данных о погоде.",
-                )
-            data = response.json()
-
-            forecast_for_date = [
-                entry for entry in data["list"] if entry["dt_txt"].split(" ")[0] == date
-            ]
-
-            if not forecast_for_date:
-                return {"message": f"Нет данных о погоде для {city} на {date}."}
-
-            forecast_str = "\n".join(
-                [
-                    f"{entry['dt_txt'].split(' ')[1][:5]}      {entry['main']['temp']}°C, {entry['weather'][0]['description']} {get_weather_emoji(entry['weather'][0]['description'])}"
-                    for entry in forecast_for_date
-                ]
-            )
-
-            return {"city": data["city"]["name"], "forecast": forecast_str.split("\n")}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.get("/weather")
+# async def get_weather(
+#     request: Request,
+#     date: str,
+#     current_user: str = Depends(get_current_user)
+#     ):
+#
+#     city = await get_user_city()
+#
+#     if not city:
+#         raise HTTPException(status_code=404, detail="User's city not found.")
+#
+#     url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric&lang=en"
+#
+#     try:
+#         async with httpx.AsyncClient() as client:
+#             response = await client.get(url)
+#             if response.status_code != 200:
+#                 raise HTTPException(
+#                     status_code=response.status_code,
+#                     detail="Ошибка получения данных о погоде.",
+#                 )
+#             data = response.json()
+#
+#             forecast_for_date = [
+#                 entry for entry in data["list"] if entry["dt_txt"].split(" ")[0] == date
+#             ]
+#
+#             if not forecast_for_date:
+#                 return {"message": f"Нет данных о погоде для {city} на {date}."}
+#
+#             forecast_str = "\n".join(
+#                 [
+#                     f"{entry['dt_txt'].split(' ')[1][:5]}      {entry['main']['temp']}°C, {entry['weather'][0]['description']} {get_weather_emoji(entry['weather'][0]['description'])}"
+#                     for entry in forecast_for_date
+#                 ]
+#             )
+#
+#             return {"city": data["city"]["name"], "forecast": forecast_str.split("\n")}
+#
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 def get_weather_emoji(description: str) -> str:

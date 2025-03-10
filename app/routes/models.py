@@ -5,6 +5,5 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 class TokenData(BaseModel):
-    username: str | None = None
-    roles: list[str] | None = []
+    id: int = None
     exp: int | None = None
