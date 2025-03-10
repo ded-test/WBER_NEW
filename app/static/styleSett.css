@@ -1,0 +1,149 @@
+/* Общие стили */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Space Grotesk", sans-serif;
+}
+
+html {
+    background-color: #f4f4f4;
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    position: relative;
+}
+
+/* Стили для header */
+header {
+    height: 100px;
+    padding: 20px 40px;
+    background-color: #48484a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    width: 225px;
+    height: auto;
+}
+
+.button_login {
+    color: #ffffff;
+    padding: 4px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    border: 2px solid #48484a;
+    cursor: pointer;
+    font-size: 25px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* Стили для settings */
+.settings {
+    width: 400px;
+    margin: 16px auto;
+    font-size: 16px;
+    font-family: "Kode Mono", serif;
+}
+
+.settings-header {
+    background: #48484a;
+    padding: 20px;
+    font-size: 40px;
+    text-align: center;
+    text-transform: uppercase;
+    color: #e96e50;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+/* Стили для формы */
+.form-group {
+    background: #ebebeb;
+    padding: 12px;
+    text-align: center;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 8px;
+    text-align: left;
+    color: #48484a;
+}
+
+.form-group input {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #bbb;
+    font-size: 0.95em;
+    background: #fff;
+    color: #555;
+    margin-bottom: 16px;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #888;
+}
+
+/* Кнопка обновления */
+.button_update {
+    background: #e96e50;
+    border: none;
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 16px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-family: inherit;
+}
+
+.button_update:hover {
+    background: #c05540;
+}
+
+.button_update:focus {
+    outline: none;
+    border: 2px solid #c05540;
+}
+
+/* Стили для автозаполнения */
+.suggestions-box {
+    border: 1px solid #ccc;
+    background-color: white;
+    position: absolute;
+    max-height: 150px;
+    overflow-y: auto;
+    width: calc(100% - 20px);
+    margin-top: 5px;
+    z-index: 10;
+}
+
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
+}
+
+.no-suggestions {
+    padding: 10px;
+    color: #888;
+    text-align: center;
+}
