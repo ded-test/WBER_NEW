@@ -4,6 +4,7 @@ from .routes import *
 app = FastAPI()
 
 app.include_router(auth_router)
+app.include_router(cities_router)
 app.include_router(events_router)
 app.include_router(users_router)
 app.include_router(weather_router)

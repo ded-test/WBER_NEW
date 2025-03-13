@@ -1,13 +1,13 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.future import select
 from models import DataUser
-from sqlalchemy.exc import SQLAlchemyError
 
 class UserCRUD:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def create_user(self, username: str, mail: str, city: str, password: bytes, salt: bytes):
+    async def create_user(self, username: str, mail: str, city: str, password: bytes, salt: bytes):
         try:
             user = DataUser(
                 username=username,
@@ -17,41 +17,48 @@ class UserCRUD:
                 salt=salt
             )
             self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
+            await self.db.commit()
+            await self.db.refresh(user)
             return user
         except SQLAlchemyError as e:
-            self.db.rollback()
+            await self.db.rollback()
             return {"error": f"Database error: {str(e)}"}
 
-    def get_user(self, user_id: int):
-        user = self.db.query(DataUser).filter(DataUser.id == user_id).first()
-        if not user:
-            return {"error": "User not found"}
-        return user
+    async def get_user(self, user_id: int):
+        result = await self.db.execute(select(DataUser).filter(DataUser.id == user_id))
+        return result.scalar()
 
-    def get_mail(self, user_id: int):
-        user = self.get_user(user_id)
+    async def get_mail(self, user_id: int):
+        user = await self.get_user(user_id)
         return user.mail if user else None
 
-    def get_city(self, user_id: int):
-        user = self.get_user(user_id)
+    async def get_city(self, user_id: int):
+        user = await self.get_user(user_id)
         return user.city if user else None
 
-    def update_city(self, user_id: int, new_city: str):
+    async def check_username(self, username: str):
+        result = await self.db.execute(select(DataUser).filter(DataUser.username == username))
+        return result.scalar() is None
+
+    async def check_mail(self, mail: str):
+        result = await self.db.execute(select(DataUser).filter(DataUser.mail == mail))
+        return result.scalar() is None
+
+    async def update_city(self, user_id: int, new_city: str):
         try:
-            user = self.get_user(user_id)
+            user = await self.get_user(user_id)
             if not user:
                 return {"error": "User not found"}
             if user.city == new_city:
                 return {"message": "City is already set to this value"}
 
             user.city = new_city
-            self.db.commit()
+            await self.db.commit()
             return {"message": f"City updated to {new_city}"}
         except SQLAlchemyError as e:
-            self.db.rollback()
+            await self.db.rollback()
             return {"error": f"Database error: {str(e)}"}
+
 
 
 # class EventCRUD:
