@@ -16,6 +16,14 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="Bearer ")
 templates = Jinja2Templates(directory="./Templates")
 router.mount("/Static", StaticFiles(directory="./Static"), name="static")
 
+class AuthRedirectException(Exception):
+    pass
+
+@router.exception_handler(AuthRedirectException)
+async def auth_redirect_handler(request: Request, exc: AuthRedirectException):
+    return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+
+
 def create_access_token(user_id: int, expires_delta: timedelta = timedelta(hours=168)):
     to_encode = {"sub": str(user_id)}
     expire = datetime.utcnow() + expires_delta
@@ -45,8 +53,9 @@ async def read_root(request: Request, user_id: int = Depends(get_current_user)):
     city = "City"
 
     try:
-        username = UserCRUD.get_user(user_id)
-        city = UserCRUD.get_city(user_id)
+        user = await UserCRUD.get_user(user_id)
+        username = user.username
+        city = user.city
     except Exception as e:
         pass
 
@@ -62,6 +71,10 @@ async def read_root(request: Request, user_id: int = Depends(get_current_user)):
 @router.get("/login")
 async def read_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+@router.get("/registration")
+async def read_registration(request: Request):
+    return templates.TemplateResponse("registration.html", {"request": request})
 
 @router.post("/login")
 async def submit_login(request: Request):
@@ -86,10 +99,6 @@ async def submit_login(request: Request):
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
     )
-
-@router.get("/registration")
-async def read_registration(request: Request):
-    return templates.TemplateResponse("registration.html", {"request": request})
 
 @router.post("/register")
 async def submit_register(request: Request):

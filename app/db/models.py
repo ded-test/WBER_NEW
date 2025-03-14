@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BINARY, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, BINARY, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -24,6 +24,6 @@ class DataEvent (Base):
     event_date = Column(DateTime)
     name = Column(String)
     description = Column(String, nullable=True)
-    category = Column(String)
+    category = Column(Boolean)
 
     owner = relationship("DataUser", back_populates="events")
