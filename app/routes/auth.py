@@ -1,28 +1,17 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 import bcrypt
 import jwt
 from ..db import *
 from ..core import *
+from app.db.session import get_db
 
 router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="Bearer ")
-
-templates = Jinja2Templates(directory="./Templates")
-router.mount("/Static", StaticFiles(directory="./Static"), name="static")
-
-class AuthRedirectException(Exception):
-    pass
-
-@router.exception_handler(AuthRedirectException)
-async def auth_redirect_handler(request: Request, exc: AuthRedirectException):
-    return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-
 
 def create_access_token(user_id: int, expires_delta: timedelta = timedelta(hours=168)):
     to_encode = {"sub": str(user_id)}
@@ -59,6 +48,8 @@ async def read_root(request: Request, user_id: int = Depends(get_current_user)):
     except Exception as e:
         pass
 
+    from ..main import templates
+
     return templates.TemplateResponse(
         "main.html",
         {
@@ -70,19 +61,21 @@ async def read_root(request: Request, user_id: int = Depends(get_current_user)):
 
 @router.get("/login")
 async def read_login(request: Request):
+    from ..main import templates
     return templates.TemplateResponse("login.html", {"request": request})
 
 @router.get("/registration")
 async def read_registration(request: Request):
+    from ..main import templates
     return templates.TemplateResponse("registration.html", {"request": request})
 
 @router.post("/login")
-async def submit_login(request: Request):
+async def submit_login(request: Request, db: AsyncSession = Depends(get_db)):
     form = await request.form()
     mail = form.get("mail")
     password = form.get("password")
 
-    user = await UserCRUD.get_user(mail)
+    user = await UserCRUD.get_user_mail(db, mail)
     if user and bcrypt.checkpw(password.encode("utf-8"), user.password):
         access_token = create_access_token(user_id=user.id)
 
@@ -101,31 +94,35 @@ async def submit_login(request: Request):
     )
 
 @router.post("/register")
-async def submit_register(request: Request):
+async def submit_register(request: Request, db: AsyncSession = Depends(get_db)):
     form = await request.form()
     username = form.get("username")
     city = form.get("city")
     mail = form.get("mail")
     password = form.get("password")
 
+
     if not all([username, city, mail, password]):
         raise HTTPException(status_code=400, detail="All fields are required")
 
-    existing_user = await UserCRUD.check_username(username)
-    if not existing_user:
+    existing_user = await UserCRUD.check_username(db, username)
+    if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
 
-    existing_email = await UserCRUD.check_mail(mail)
-    if not existing_email:
+    existing_email = await UserCRUD.check_mail(db, mail)
+    if existing_email:
         raise HTTPException(status_code=400, detail="Email already exists")
 
     try:
-        hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
         await UserCRUD.create_user(
+            db=db,
             username=username,
             city=city,
             mail=mail,
             password=hashed_password,
+            salt=salt,
         )
     except Exception as e:
         raise HTTPException(

@@ -1,14 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
-from models import DataUser, DataEvent
+from app.db.models import DataUser, DataEvent
 from datetime import datetime, time
 
 class UserCRUD:
-    def __init__(self, db: AsyncSession):
-        self.db = db
-
-    async def create_user(self, username: str, mail: str,
+    @staticmethod
+    async def create_user(db: AsyncSession, username: str, mail: str,
                           city: str, password: bytes, salt: bytes):
         try:
             user = DataUser(
@@ -18,54 +16,64 @@ class UserCRUD:
                 password=password,
                 salt=salt
             )
-            self.db.add(user)
-            await self.db.commit()
-            await self.db.refresh(user)
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
             return user
         except SQLAlchemyError as e:
-            await self.db.rollback()
+            await db.rollback()
             return {"error": f"Database error: {str(e)}"}
 
-    async def get_user(self, user_id: int):
-        result = await self.db.execute(select(DataUser).filter(DataUser.id == user_id))
+    @staticmethod
+    async def get_user_mail(db: AsyncSession, mail: str):
+        result = await db.execute(select(DataUser).filter_by(mail=mail))
         return result.scalar()
 
-    async def get_mail(self, user_id: int):
-        user = await self.get_user(user_id)
+    @staticmethod
+    async def get_user_user_id(db: AsyncSession, user_id: int):
+        result = await db.execute(select(DataUser).filter_by(id=user_id))
+        return result.scalar()
+
+    @staticmethod
+    async def get_mail(db: AsyncSession, user_id: int):
+        user = await UserCRUD.get_user_user_id(db, user_id)
         return user.mail if user else None
 
-    async def get_city(self, user_id: int):
-        user = await self.get_user(user_id)
+    @staticmethod
+    async def get_city(db: AsyncSession, user_id: int):
+        user = await UserCRUD.get_user_user_id(db, user_id)
         return user.city if user else None
 
-    async def check_username(self, username: str):
-        result = await self.db.execute(select(DataUser).filter(DataUser.username == username))
-        return result.scalar() is None
+    @staticmethod
+    async def check_username(db: AsyncSession, username: str) -> bool:
+        result = await db.execute(select(DataUser).filter(DataUser.username == username))
+        return result.scalar() is not None
 
-    async def check_mail(self, mail: str):
-        result = await self.db.execute(select(DataUser).filter(DataUser.mail == mail))
-        return result.scalar() is None
+    @staticmethod
+    async def check_mail(db: AsyncSession, mail: str) -> bool:
+        result = await db.execute(select(DataUser).filter(DataUser.mail == mail))
+        return result.scalar() is not None
 
-    async def update_city(self, user_id: int, new_city: str):
+    @staticmethod
+    async def update_city(db: AsyncSession, user_id: int, new_city: str):
         try:
-            user = await self.get_user(user_id)
+            user = await UserCRUD.get_user(db, user_id)
             if not user:
                 return {"error": "User not found"}
             if user.city == new_city:
                 return {"message": "City is already set to this value"}
 
             user.city = new_city
-            await self.db.commit()
+            await db.commit()
             return {"message": f"City updated to {new_city}"}
         except SQLAlchemyError as e:
-            await self.db.rollback()
+            await db.rollback()
             return {"error": f"Database error: {str(e)}"}
 
-class EventCRUD:
-    def __init__(self, db: AsyncSession):
-        self.db = db
 
-    async def create_event(self, user_id: int, event_date: datetime, name: str,
+class EventCRUD:
+    @staticmethod
+    async def create_event(db: AsyncSession, user_id: int, event_date: datetime, name: str,
                            description: str, category: bool):
         try:
             event = DataEvent(
@@ -75,18 +83,19 @@ class EventCRUD:
                 description=description,
                 category=category
             )
-            self.db.add(event)
-            await self.db.commit()
-            await self.db.refresh(event)
+            db.add(event)
+            await db.commit()
+            await db.refresh(event)
             return event
         except SQLAlchemyError as e:
-            await self.db.rollback()
+            await db.rollback()
             return {"error": f"Database error: {str(e)}"}
 
-    async def update_event(self, event_id: int, user_id: int, event_date: datetime,
+    @staticmethod
+    async def update_event(db: AsyncSession, event_id: int, user_id: int, event_date: datetime,
                            name: str, description: str, category: bool):
         try:
-            result = await self.db.execute(select(DataEvent).filter_by(id=event_id, user_id=user_id))
+            result = await db.execute(select(DataEvent).filter_by(id=event_id, user_id=user_id))
             event = result.scalars().first()
 
             if not event:
@@ -101,17 +110,18 @@ class EventCRUD:
             if category is not None:
                 event.category = category
 
-            await self.db.commit()
-            await self.db.refresh(event)
+            await db.commit()
+            await db.refresh(event)
             return {"message": "Event updated successfully"}
 
         except SQLAlchemyError as e:
-            await self.db.rollback()
+            await db.rollback()
             return {"error": f"Database error: {str(e)}"}
 
-    async def delete_event(self, event_id: int, user_id: int):
+    @staticmethod
+    async def delete_event(db: AsyncSession, event_id: int, user_id: int):
         try:
-            result = await self.db.execute(select(DataEvent).filter_by(id=event_id, user_id=user_id))
+            result = await db.execute(select(DataEvent).filter_by(id=event_id, user_id=user_id))
             event = result.scalars().first()
 
             if not event:
@@ -119,22 +129,22 @@ class EventCRUD:
 
             deleted_event = {"id": event.id, "name": event.name}
 
-            await self.db.delete(event)
-            await self.db.commit()
+            await db.delete(event)
+            await db.commit()
 
             return {"message": "Event deleted successfully", "deleted_event": deleted_event}
 
         except SQLAlchemyError as e:
-            await self.db.rollback()
+            await db.rollback()
             return {"error": f"Database error: {str(e)}"}
 
-    async def get_event(self, user_id: int, event_date: datetime):
+    @staticmethod
+    async def get_event(db: AsyncSession, user_id: int, event_date: datetime):
         try:
-            # Ограничим поиск события по дате
             start_of_day = datetime.combine(event_date, time.min)
             end_of_day = datetime.combine(event_date, time.max)
 
-            events = await self.db.execute(
+            events = await db.execute(
                 select(DataEvent).where(
                     DataEvent.user_id == user_id,
                     DataEvent.event_date >= start_of_day,

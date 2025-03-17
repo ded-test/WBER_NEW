@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import JSONResponse
 from allcities import cities
 from ..db import *
-from .auth import get_current_user, templates
+from .auth import get_current_user
 
 router = APIRouter()
 
@@ -26,6 +26,8 @@ async def changing_city(request: Request, current_user: str = Depends(get_curren
     current_user = int(current_user)
 
     result = await UserCRUD.update_city(user_id=current_user, new_city=city)
+
+    from ..main import templates
 
     if result.get("status") == "success":
         return templates.TemplateResponse(

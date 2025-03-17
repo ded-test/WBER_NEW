@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BINARY, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, LargeBinary, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -11,8 +11,8 @@ class DataUser(Base):
     username = Column(String, unique=True, index=True)
     city = Column(String)
     mail = Column(String, unique=True, index=True)
-    password = Column(BINARY)
-    salt = Column(BINARY)
+    password = Column(LargeBinary)
+    salt = Column(LargeBinary)
 
     events = relationship("DataEvent", back_populates="owner")
 
