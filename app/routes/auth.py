@@ -11,7 +11,7 @@ from app.db.session import get_db
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="Bearer ")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 def create_access_token(user_id: int, expires_delta: timedelta = timedelta(hours=168)):
     to_encode = {"sub": str(user_id)}
@@ -22,6 +22,9 @@ def create_access_token(user_id: int, expires_delta: timedelta = timedelta(hours
 
 def decode_access_token(token: str):
     try:
+        if not token or not token.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Token is missing or invalid")
+        token = token.split(" ")[1]
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         return payload  # useful load mail + exp(time)
     except jwt.ExpiredSignatureError:
@@ -37,12 +40,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user_id
 
 @router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, user_id: int = Depends(get_current_user)):
+async def read_root(request: Request, user_id: int = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     username = "Sign In"
     city = "City"
 
     try:
-        user = await UserCRUD.get_user(user_id)
+        user = await UserCRUD.get_user(db, user_id)
         username = user.username
         city = user.city
     except Exception as e:
@@ -75,7 +78,7 @@ async def submit_login(request: Request, db: AsyncSession = Depends(get_db)):
     mail = form.get("mail")
     password = form.get("password")
 
-    user = await UserCRUD.get_user_mail(db, mail)
+    user = await UserCRUD.get_user(db, mail)
     if user and bcrypt.checkpw(password.encode("utf-8"), user.password):
         access_token = create_access_token(user_id=user.id)
 

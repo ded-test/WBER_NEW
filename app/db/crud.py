@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, NoResultFound
 from sqlalchemy.future import select
 from app.db.models import DataUser, DataEvent
 from datetime import datetime, time
+from typing import Union
 
 class UserCRUD:
     @staticmethod
@@ -18,30 +19,34 @@ class UserCRUD:
             )
             db.add(user)
             await db.commit()
-            await db.refresh(user)
             return user
         except SQLAlchemyError as e:
             await db.rollback()
             return {"error": f"Database error: {str(e)}"}
+        except Exception as e:
+            await db.rollback()
+            return {"error": f"Unexpected error: {str(e)}"}
 
     @staticmethod
-    async def get_user_mail(db: AsyncSession, mail: str):
-        result = await db.execute(select(DataUser).filter_by(mail=mail))
-        return result.scalar()
+    async def get_user(db: AsyncSession, identifier: Union[str, int]):
+
+        if isinstance(identifier, int) or identifier.isdigit():
+            identifier = int(identifier)
+            search_criteria = {"id": identifier}
+        else:
+            search_criteria = {"mail": identifier}
+
+        result = await db.execute(select(DataUser).filter_by(**search_criteria))
+        return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_user_user_id(db: AsyncSession, user_id: int):
-        result = await db.execute(select(DataUser).filter_by(id=user_id))
-        return result.scalar()
-
-    @staticmethod
-    async def get_mail(db: AsyncSession, user_id: int):
-        user = await UserCRUD.get_user_user_id(db, user_id)
+    async def get_mail(db: AsyncSession, identifier: int):
+        user = await UserCRUD.get_user(db, identifier)
         return user.mail if user else None
 
     @staticmethod
-    async def get_city(db: AsyncSession, user_id: int):
-        user = await UserCRUD.get_user_user_id(db, user_id)
+    async def get_city(db: AsyncSession, identifier: int):
+        user = await UserCRUD.get_user(db, identifier)
         return user.city if user else None
 
     @staticmethod
