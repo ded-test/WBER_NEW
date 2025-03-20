@@ -45,7 +45,9 @@ async def get_current_user(request: Request):
     return user_id
 
 @router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, user_id: int = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def read_root(request: Request,
+                    user_id: int = Depends(get_current_user),
+                    db: AsyncSession = Depends(get_db)):
     username = "Sign In"
     city = "City"
 

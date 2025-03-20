@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import SQLAlchemyError, NoResultFound
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 from app.db.models import DataUser, DataEvent
 from datetime import datetime, time
@@ -65,7 +65,7 @@ class UserCRUD:
             if not user:
                 return {"error": "User not found"}
             if user.city == new_city:
-                return {"message": "City is already set to this value"}
+                return {"status": "success"}
 
             user.city = new_city
             await db.commit()

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import JSONResponse
 from allcities import cities
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from ..db import *
 from .auth import get_current_user
 
@@ -14,7 +16,11 @@ async def get_cities(prefix: str = ""):
     return {"cities": results[:5]}
 
 @router.post("/update-city")
-async def changing_city(request: Request, current_user: str = Depends(get_current_user)):
+async def changing_city(
+        request: Request,
+        current_user: str = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+    ):
     form = await request.form()
     city = form.get("city")
 
@@ -25,7 +31,7 @@ async def changing_city(request: Request, current_user: str = Depends(get_curren
 
     current_user = int(current_user)
 
-    result = await UserCRUD.update_city(user_id=current_user, new_city=city)
+    result = await UserCRUD.update_city(db, user_id=current_user, new_city=city)
 
     from ..main import templates
 
