@@ -29,14 +29,13 @@ class UserCRUD:
 
     @staticmethod
     async def get_user(db: AsyncSession, identifier: Union[str, int]):
-
-        if isinstance(identifier, int) or identifier.isdigit():
+        if isinstance(identifier, int) or (isinstance(identifier, str) and identifier.isdigit()):
             identifier = int(identifier)
-            search_criteria = {"id": identifier}
+            search_filter = DataUser.id == identifier
         else:
-            search_criteria = {"mail": identifier}
+            search_filter = DataUser.mail == identifier
 
-        result = await db.execute(select(DataUser).filter_by(**search_criteria))
+        result = await db.execute(select(DataUser).filter(search_filter))
         return result.scalar_one_or_none()
 
     @staticmethod

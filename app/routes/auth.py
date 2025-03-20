@@ -22,9 +22,6 @@ def create_access_token(user_id: int, expires_delta: timedelta = timedelta(hours
 
 def decode_access_token(token: str):
     try:
-        if not token or not token.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Token is missing or invalid")
-        token = token.split(" ")[1]
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         return payload  # useful load mail + exp(time)
     except jwt.ExpiredSignatureError:
@@ -32,11 +29,19 @@ def decode_access_token(token: str):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+
+async def get_current_user(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token = token.replace("Bearer ", "")
     payload = decode_access_token(token)
     user_id = payload.get("sub")
+
     if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid token")
+
     return user_id
 
 @router.get("/", response_class=HTMLResponse)
@@ -87,7 +92,7 @@ async def submit_login(request: Request, db: AsyncSession = Depends(get_db)):
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=True,
+            secure=False, #defalt True, False for localhost
             samesite="lax",
             max_age=86400,  # 1 day
         )
