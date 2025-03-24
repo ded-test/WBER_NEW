@@ -8,14 +8,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const displayedDateElement = document.getElementById('displayed-date');
     const eventForm = document.getElementById('createEventForm');
 
+    // Функция для получения списка событий по дате
     const fetchEventsForDate = async (date) => {
         const eventsContainer = document.getElementById('events-container');
         const noEventsMessage = document.getElementById('no-events-message');
         const eventList = document.getElementById('event-list');
 
         try {
-            const response = await axios.get('/get_events', { params: { date } });
-            const events = response.data; // Обработать данные
+            // Добавляем время 00:00:00, если сервер ожидает полный формат datetime
+            const fullDate = `${date}T00:00:00`;
+            const response = await axios.get('/get_events', { params: { event_date: fullDate } });
+            const events = response.data.events; // Убедись, что сервер возвращает массив `events`
 
             if (events.length > 0) {
                 noEventsMessage.style.display = 'none';
@@ -26,7 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p>${event.description || 'No description available'}</p>
                         <p><strong>Date:</strong> ${event.event_date}</p>
                         <p><strong>Category:</strong> ${event.category}</p>
-                    </li>`).join('');
+                    </li>
+                `).join('');
             } else {
                 eventList.style.display = 'none';
                 noEventsMessage.style.display = 'block';
@@ -36,8 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-
-    // Функция для отображения меню создания события
+    // Функция для показа/скрытия меню создания событий
     const toggleCreateEventMenu = (selectedDate) => {
         const isMenuVisible = createEventMenu.style.display === 'block';
         createEventMenu.style.display = isMenuVisible ? 'none' : 'block';
@@ -47,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // Функция для получения погоды на выбранную дату
+    // Функция для получения погоды по дате
     const fetchWeatherForDate = async (date) => {
         const weatherResultElement = document.getElementById('weather-result');
         if (weatherResultElement) {
@@ -56,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const weatherForecast = response.data.forecast || [];
                 weatherResultElement.innerHTML = weatherForecast.length ? weatherForecast.join('<br>') : 'No weather data available.';
             } catch (error) {
-                weatherResultElement.textContent = 'Error when retrieving weather. Check if your city is correct!';
+                weatherResultElement.textContent = 'Error retrieving weather. Check if your city is correct!';
             }
         }
     };
@@ -72,8 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectedDateElement.textContent = selectedDate;
                 localStorage.setItem('selectedDate', selectedDate);
                 fetchWeatherForDate(selectedDate);
-                fetchEventsForDate(selectedDate);  // Теперь функция доступна
-                toggleDateHighlight(info.dayEl); // Вызываем функцию для выделения дня
+                fetchEventsForDate(selectedDate);
+                toggleDateHighlight(info.dayEl);
             },
         });
         calendar.render();
@@ -85,15 +88,12 @@ document.addEventListener('DOMContentLoaded', function () {
         fetchEventsForDate(lastSelectedDate);
     }
 
-    // Функция для выделения выбранного дня в календаре
+    // Функция выделения выбранной даты
     const toggleDateHighlight = (dayElement) => {
-        // Убираем выделение с предыдущего выбранного дня
         const previouslySelectedDay = document.querySelector('.fc-day.fc-day-selected');
         if (previouslySelectedDay) {
             previouslySelectedDay.classList.remove('fc-day-selected');
         }
-
-        // Добавляем выделение для текущего дня
         dayElement.classList.add('fc-day-selected');
     };
 
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleCreateEventMenu(selectedDate);
     });
 
-    // Отмена создания события
+    // Закрытие меню создания события
     document.getElementById('cancelEventButton')?.addEventListener('click', (e) => {
         e.preventDefault();
         toggleCreateEventMenu();

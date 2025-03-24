@@ -7,8 +7,13 @@ from typing import Union
 
 class UserCRUD:
     @staticmethod
-    async def create_user(db: AsyncSession, username: str, mail: str,
-                          city: str, password: bytes, salt: bytes):
+    async def create_user(db: AsyncSession,
+                          username: str,
+                          mail: str,
+                          city: str,
+                          password: bytes,
+                          salt: bytes
+                        ):
         try:
             user = DataUser(
                 username=username,
@@ -78,8 +83,13 @@ class UserCRUD:
 
 class EventCRUD:
     @staticmethod
-    async def create_event(db: AsyncSession, user_id: int, event_date: datetime, name: str,
-                           description: str, category: bool):
+    async def create_event(db: AsyncSession,
+                           user_id: int,
+                           event_date: datetime,
+                           name: str,
+                           description: str,
+                           category: bool
+                        ):
         try:
             event = DataEvent(
                 user_id=user_id,
@@ -97,10 +107,16 @@ class EventCRUD:
             return {"error": f"Database error: {str(e)}"}
 
     @staticmethod
-    async def update_event(db: AsyncSession, event_id: int, user_id: int, event_date: datetime,
-                           name: str, description: str, category: bool):
+    async def update_event(db: AsyncSession,
+                           event_id: int,
+                           user_id: int,
+                           event_date: datetime,
+                           name: str,
+                           description: str,
+                           category: bool):
         try:
-            result = await db.execute(select(DataEvent).filter_by(id=event_id, user_id=user_id))
+            result = await db.execute(select(DataEvent).filter_by(
+                id=event_id, user_id=user_id))
             event = result.scalars().first()
 
             if not event:
@@ -126,7 +142,8 @@ class EventCRUD:
     @staticmethod
     async def delete_event(db: AsyncSession, event_id: int, user_id: int):
         try:
-            result = await db.execute(select(DataEvent).filter_by(id=event_id, user_id=user_id))
+            result = await db.execute(select(DataEvent).filter_by(
+                id=event_id, user_id=user_id))
             event = result.scalars().first()
 
             if not event:
@@ -137,7 +154,8 @@ class EventCRUD:
             await db.delete(event)
             await db.commit()
 
-            return {"message": "Event deleted successfully", "deleted_event": deleted_event}
+            return {"message": "Event deleted successfully",
+                    "deleted_event": deleted_event}
 
         except SQLAlchemyError as e:
             await db.rollback()

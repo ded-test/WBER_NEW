@@ -65,23 +65,20 @@ function showError(message) {
         const errorMessageElement = document.getElementById('error-message');
 
         // Отображаем ошибку
-        errorElement.style.display = 'block'; // Показываем контейнер с ошибкой
-        errorMessageElement.textContent = message; // Вставляем текст ошибки
+        errorElement.style.display = 'block';
+        errorMessageElement.textContent = message;
     }
 
-    // Обработчик отправки формы
     document.querySelector('.registrationForm').addEventListener('submit', function (e) {
-        e.preventDefault(); // Останавливаем стандартную отправку формы
+        e.preventDefault();
 
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
-        // Проверяем, что все поля заполнены (включая пароль)
         if (!data.username || !data.mail || !data.password) {
             displayError("All fields are required.");
-            return; // Останавливаем выполнение, если что-то не заполнено
+            return;
         }
 
-        // Если все поля заполнены, отправляем форму стандартным методом
-        this.submit(); // Стандартная отправка формы
+        this.submit();
     });

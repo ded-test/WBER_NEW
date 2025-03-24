@@ -15,11 +15,10 @@ function hideMessage() {
     }
 }
 
-// Инициализация при загрузке страницы
+
 window.onload = function () {
     hideMessage();
 
-    // Загружаем город из localStorage
     const savedCity = localStorage.getItem('city');
     const cityInput = document.getElementById('city-input');
     const currentCity = document.getElementById('current-city');
@@ -30,11 +29,10 @@ window.onload = function () {
     }
 };
 
-// Обновление города в localStorage при отправке формы
 const form = document.getElementById('city-form');
 if (form) {
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Предотвращаем стандартное поведение формы
+        e.preventDefault();
 
         const cityInput = document.getElementById('city-input');
         const city = cityInput?.value.trim();
@@ -59,14 +57,13 @@ if (form) {
     });
 }
 
-// Асинхронная функция для автозаполнения городов
 const input = document.getElementById('city-input');
 const suggestionsBox = document.getElementById('suggestions');
 
 if (input && suggestionsBox) {
     input.addEventListener('input', async () => {
         const query = input.value.trim();
-        suggestionsBox.innerHTML = ''; // Очищаем предложения перед новым запросом
+        suggestionsBox.innerHTML = '';
 
         if (query.length > 0) {
             try {
@@ -83,8 +80,8 @@ if (input && suggestionsBox) {
                         div.textContent = city;
                         div.classList.add('suggestion-item');
                         div.addEventListener('click', () => {
-                            input.value = city; // Устанавливаем выбранный город
-                            suggestionsBox.innerHTML = ''; // Очищаем предложения
+                            input.value = city;
+                            suggestionsBox.innerHTML = '';
                         });
                         suggestionsBox.appendChild(div);
                     });
