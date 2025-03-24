@@ -16,22 +16,18 @@ async def get_cities(prefix: str = ""):
     return {"cities": results[:5]}
 
 @router.post("/update-city")
-async def changing_city(
+async def change_city(
         request: Request,
-        current_user: str = Depends(get_current_user),
+        user_id: str = Depends(get_current_user),
         db: AsyncSession = Depends(get_db)
     ):
     form = await request.form()
-    city = form.get("city")
+    new_city = form.get("city")
 
     if not city:
         raise HTTPException(status_code=400, detail="City is required")
 
-    print(f"Received city: {city}")
-
-    current_user = int(current_user)
-
-    result = await UserCRUD.update_city(db, user_id=current_user, new_city=city)
+    result = await UserCRUD.update_city(db, user_id, new_city)
 
     from ..main import templates
 

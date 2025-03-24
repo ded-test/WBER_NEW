@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,10 +22,11 @@ app.mount("/static", StaticFiles(directory="./static"), name="static")
 class AuthRedirectException(Exception):
     pass
 
-@app.exception_handler(AuthRedirectException)
-async def auth_redirect_handler(request: Request, exc: AuthRedirectException):
-    return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-
+@app.exception_handler(HTTPException)
+async def auth_exception_handler(request: Request, exc: HTTPException):
+    if exc.status_code == 401:
+        return RedirectResponse(url="/login")
+    return exc
 if __name__ == "__main__":
     asyncio.run(create_tables())
     uvicorn.run("main:app", reload=True, host="127.0.0.1", port=8000)

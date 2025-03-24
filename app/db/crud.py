@@ -69,6 +69,7 @@ class UserCRUD:
 
             user.city = new_city
             await db.commit()
+            await db.refresh(user)
             return {"message": f"City updated to {new_city}"}
         except SQLAlchemyError as e:
             await db.rollback()

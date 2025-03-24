@@ -26,23 +26,30 @@ def decode_access_token(token: str):
         return payload  # useful load mail + exp(time)
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.InvalidTokenError:
+    except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
 
 
 async def get_current_user(request: Request):
     token = request.cookies.get("access_token")
+
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    token = token.replace("Bearer ", "")
-    payload = decode_access_token(token)
-    user_id = payload.get("sub")
+    if token.startswith("Bearer "):
+        token = token.replace("Bearer ", "")
 
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    try:
+        payload = decode_access_token(token)
+        user_id = payload.get("sub")
 
-    return user_id
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        return user_id
+    except HTTPException:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 @router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request,
