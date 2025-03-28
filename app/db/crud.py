@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 from app.db.models import DataUser, DataEvent
-from datetime import datetime, time
+from datetime import date, time
 from typing import Union
 
 class UserCRUD:
@@ -85,7 +85,8 @@ class EventCRUD:
     @staticmethod
     async def create_event(db: AsyncSession,
                            user_id: int,
-                           event_date: datetime,
+                           event_date: date,
+                           event_time: time,
                            name: str,
                            description: str,
                            category: bool
@@ -94,6 +95,7 @@ class EventCRUD:
             event = DataEvent(
                 user_id=user_id,
                 event_date=event_date,
+                event_time=event_time,
                 name=name,
                 description=description,
                 category=category
@@ -110,7 +112,8 @@ class EventCRUD:
     async def update_event(db: AsyncSession,
                            event_id: int,
                            user_id: int,
-                           event_date: datetime,
+                           event_date: date,
+                           event_time: time,
                            name: str,
                            description: str,
                            category: bool):
@@ -124,6 +127,8 @@ class EventCRUD:
 
             if event_date is not None:
                 event.event_date = event_date
+            if event_time is not None:
+                event.event_time = event_time
             if name is not None:
                 event.name = name
             if description is not None:
@@ -162,17 +167,15 @@ class EventCRUD:
             return {"error": f"Database error: {str(e)}"}
 
     @staticmethod
-    async def get_event(db: AsyncSession, user_id: int, event_date: datetime):
+    async def get_event(db: AsyncSession, user_id: int, event_date: date):
         try:
-            start_of_day = datetime.combine(event_date, time.min)
-            end_of_day = datetime.combine(event_date, time.max)
-
             events = await db.execute(
-                select(DataEvent).where(
+                select(DataEvent)
+                .where(
                     DataEvent.user_id == user_id,
-                    DataEvent.event_date >= start_of_day,
-                    DataEvent.event_date <= end_of_day
+                    DataEvent.event_date == event_date
                 )
+                .order_by(DataEvent.event_time)
             )
             events = events.scalars().all()
             return events

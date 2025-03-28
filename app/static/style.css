@@ -61,6 +61,7 @@ header {
 }
 
 .right-area h2 {
+    margin-top: 10px;
     margin-bottom: 20px;
     font-size: 24px;
     text-align: center;
@@ -71,8 +72,7 @@ header {
     text-align: center;
 }
 
-.button_login {
-    background-color: none;
+.button_login{
     color: #ffffff;
     padding: 4px 20px;
     text-align: center;
@@ -206,10 +206,10 @@ header {
 #no-events-message {
     text-align: center;
     font-size: 20px;
-    margin-top: 175px;
+    margin-top: 155px;
 }
 
-#create-event-button, #createEventButton {
+#create-event-button, #createEventButton, #update-event, #delete-event {
     display: block;
     margin: 20px auto;
     padding: 15px 30px;
@@ -298,7 +298,6 @@ header {
 
 #cancelEventButton {
     background-color: #ccc;
-    margin-left: 10px;
 }
 
 #cancelEventButton:hover {
@@ -392,4 +391,32 @@ h3 {
 
 .settings-button:hover, .logout-button:hover {
     background-color: #d35b42; /* Темнозеленый цвет фона при наведении */
+}
+.large-button {
+    font-size: 18px;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+.small-button {
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 50%;
+    background-color: #e96e50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: none;
+}
+
+.small-button:hover {
+    background-color: #d35b42;
+}
+
+#event-list-container {
+    position: relative;
+    margin-top: 10px;
 }

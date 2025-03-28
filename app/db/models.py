@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, LargeBinary, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, LargeBinary, ForeignKey, Date, Boolean, Time
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -21,7 +21,8 @@ class DataEvent (Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    event_date = Column(DateTime)
+    event_date = Column(Date)
+    event_time = Column(Time)
     name = Column(String)
     description = Column(String, nullable=True)
     category = Column(Boolean)
