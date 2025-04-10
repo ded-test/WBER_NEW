@@ -48,11 +48,14 @@
 
                 <div id="no-events-message">
                     <p id="text_no_event">No events on this date.</p>
-                    <button id="createEventButton" class="large-button">Create Event</button>
+                    <button id="createEventButtonNoEvents" class="large-button">Create Event</button>
                 </div>
 
                 <div id="events-message">
+                    <ul id="event-list">
 
+                    </ul>
+                    <button id="createEventButton" class="large-button">Create Event</button>
                 </div>
             </div>
         </div>
@@ -60,7 +63,7 @@
 
     <div class="blurred-background" id="blurred-background" style="display: none;"></div>
     <div class="create-event-menu" id="createEventMenu" style="display: none;">
-        <h3>Create event on <span id="displayed-date">selected date</span></h3>
+        <h3>Create event on <span id="displayed-date-create">selected date</span></h3>
         <form id="createEventForm" method="POST" action="/create_event">
             <input type="hidden" id="selected-date-input" name="event_date" placeholder="Date">
             <label for="event-name">Name event:</label>
@@ -85,6 +88,39 @@
             </div>
         </form>
     </div>
+   <div class="blurred-background" id="blurred-background-update" style="display: none;"></div>
+<div class="create-event-menu" id="createEventMenuUpf" style="display: none;">
+    <h3>Update event on <span id="displayed-date-update">selected date</span></h3>
+    <form id="updateEventForm" method="POST" action="/update_event">
+        <input type="hidden" id="update-event-id" name="event_id" placeholder="Event ID">
+        <input type="hidden" id="update-selected-date-input" name="event_date" placeholder="Date">
+
+        <label for="update-event-name">Name event:</label>
+        <input type="text" id="update-event-name" name="name" placeholder="Name" required>
+
+        <label for="update-event_time">Select time:</label>
+        <input type="time" id="update-event_time" name="event_time" placeholder="event_time">
+
+        <label for="update-event-description">Description event:</label>
+        <textarea id="update-event-description" name="description" placeholder="Description"></textarea>
+
+        <label for="update-category-indoor">There will be an event on the street?</label>
+        <div class="radio-group">
+            <label for="update-category-indoor">
+                <input type="radio" id="update-category-indoor" name="category" value="true"> Yes
+            </label>
+            <label for="update-category-outdoor">
+                <input type="radio" id="update-category-outdoor" name="category" value="false"> No
+            </label>
+        </div>
+
+        <div class="buttons">
+            <button type="button" id="update-cancelEventButton">Cancel</button>
+            <button type="submit" id="update-submitEventButton">Update</button>
+        </div>
+    </form>
+</div>
+
     <script src="../static/script_main.js"></script>
 </body>
 </html>

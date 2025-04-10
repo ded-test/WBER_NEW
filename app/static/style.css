@@ -155,6 +155,8 @@ header {
 }
 
 .bottom-section {
+    overflow-y: auto;
+    overflow-x:hidden;
     height: 60%;
     width: 100%;
     text-align: center;
@@ -163,7 +165,7 @@ header {
 }
 
 /* Цвет текста для выбранной даты */
-#selected-date, #displayed-date {
+#selected-date, #displayed-date , #displayed-date-create, #displayed-date-update{
     color: #e96e50;
 }
 
@@ -209,9 +211,23 @@ header {
     margin-top: 155px;
 }
 
-#create-event-button, #createEventButton, #update-event, #delete-event {
+#create-event-button, #update-event, #delete-event, #createEventButtonNoEvents {
     display: block;
     margin: 20px auto;
+    padding: 15px 30px;
+    font-size: 20px;
+    background-color: #e96e50;
+    border: none;
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+#createEventButton {
+    position: fixed;
+    bottom: 30px;
+    left: 75%;
+    transform: translateX(-50%);
     padding: 15px 30px;
     font-size: 20px;
     background-color: #e96e50;
@@ -296,11 +312,12 @@ header {
     margin-top: 5px;
 }
 
-#cancelEventButton {
+#cancelEventButton, #update-cancelEventButton {
     background-color: #ccc;
+
 }
 
-#cancelEventButton:hover {
+#cancelEventButton:hover, #update-cancelEventButton:hover {
     background-color: #999;
 }
 
@@ -416,7 +433,73 @@ h3 {
     background-color: #d35b42;
 }
 
-#event-list-container {
+#event-list {
     position: relative;
     margin-top: 10px;
+    overflow-y: auto;
 }
+
+/* Контейнер для списка событий с прокруткой */
+.events-wrapper {
+    max-height: 500px; /* Ограничение высоты */
+    overflow-y: auto; /* Скролл при большом количестве событий */
+    padding-right: 10px; /* Чтобы скролл не наезжал на контент */
+}
+
+.event-card {
+    display: flex
+;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 6px;
+    width: 95%;
+    margin-left: 25px;
+
+/* Левая часть карточки: Name и Description */
+.event-left {
+    text-align: left;
+    flex: 1;
+}
+
+/* Правая часть карточки: Category и Date */
+.event-right {
+    text-align: right;
+    min-width: 120px; /* Минимальная ширина, чтобы не сжималось */
+}
+
+/* Кнопки редактирования и удаления */
+.event-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn, .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.edit-btn:hover {
+    color: #007bff;
+}
+
+.delete-btn:hover {
+    color: #dc3545;
+}
+#createEventButtonBottom, #createEventButtonNoEvents{
+    display: block;
+    margin: 20px auto;
+    padding: 15px 30px;
+    font-size: 20px;
+    background-color: #e96e50;
+    border: none;
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}}

@@ -2,117 +2,188 @@ document.addEventListener('DOMContentLoaded', function () {
     const today = new Date().toISOString().split('T')[0];
 
     const createEventButton = document.getElementById('createEventButton');
-    const createEventButtonSmall = document.getElementById('createEventButtonSmall');
     const createEventMenu = document.getElementById('createEventMenu');
     const blurredBackground = document.getElementById('blurred-background');
     const selectedDateElement = document.getElementById('selected-date');
-    const displayedDateElement = document.getElementById('displayed-date');
+    const displayedDateElement = document.getElementById('selected-date');
     const eventForm = document.getElementById('createEventForm');
     const noEventsMessage = document.getElementById('no-events-message');
-    const eventsContainer = document.getElementById('events-container');
+    const eventsMessage = document.getElementById('events-message');
+    const eventList = document.getElementById('event-list');
+    const createEventButtonNoEvents = document.getElementById('createEventButtonNoEvents');
 
-    // Функция загрузки мероприятий
+    // Функция для получения событий по дате
     const fetchEventsForDate = async (date) => {
-        eventsContainer.innerHTML = '';
-
         try {
-            // Лог для проверки даты
-            console.log('Sending event_date:', date);
-
-            // Отправка запроса с датой
             const response = await axios.get('/get_events', { params: { event_date: date } });
-            const events = response.data.events;
-
-            if (events.length > 0) {
-                noEventsMessage.style.display = 'none';  // Скрываем "No events on this date"
-                createEventButton.style.display = 'none'; // Прячем большую кнопку
-                createEventButtonSmall.style.display = 'block'; // Показываем маленькую кнопку
-
-                events.forEach(event => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <h3>${event.name}</h3>
-                        <p><strong>Time:</strong> ${event.event_date.split('T')[1]}</p>
-                        <button class="view-details" data-id="${event.id}">View Details</button>
-                    `;
-                    eventsContainer.appendChild(li);
-                });
-            } else {
-                noEventsMessage.style.display = 'block';  // Показываем "No events on this date"
-                createEventButton.style.display = 'block'; // Показываем большую кнопку
-                createEventButtonSmall.style.display = 'none'; // Прячем маленькую кнопку
-            }
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        }
-    };
-
-    // Функция получения событий при выборе даты в календаре
-    const fetchEventsForDateWithUIUpdate = async (date) => {
-        const eventList = document.getElementById('event-list');
-        try {
-            const fullDate = date;
-            const response = await axios.get('/get_events', { params: { event_date: fullDate } });
-            const events = response.data.events;
+            const events = response.data.events || [];
 
             if (events.length > 0) {
                 noEventsMessage.style.display = 'none';
-                eventList.style.display = 'block';
-                eventsContainer.innerHTML = events.map(event => ` 
-                    <li> 
-                        <h3>${event.name}</h3>
-                        <p>${event.description || 'No description available'}</p>
-                        <p><strong>Date:</strong> ${event.event_date}</p>
-                        <p><strong>Category:</strong> ${event.category}</p>
-                    </li>
-                `).join('');
+                eventsMessage.style.display = 'block';
+                eventList.innerHTML = events.map(event => {
+                    const categoryText = event.category ? "Outdoor" : "Indoor";
+
+                    return `
+                        <div class="event-card">
+                            <div class="event-info">
+                                <h3><strong>Name:</strong> ${event.name}</h3>
+                                <p>${event.description || 'No description available'}</p>
+                                <p><strong>Category:</strong> ${categoryText}</p>
+                                <p><strong>Date:</strong> ${event.event_time}</p>
+                            </div>
+                            <div class="event-actions">
+                                <button class="edit-btn" data-event-id="${event.id}">✏️</button>
+                                <button class="delete-btn" data-event-id="${event.id}">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Добавление обработчиков событий для кнопок редактирования и удаления
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const eventId = this.getAttribute('data-event-id');
+                        editEvent(eventId);
+                    });
+                });
+
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const eventId = this.getAttribute('data-event-id');
+                        deleteEvent(eventId);
+                    });
+                });
             } else {
-                eventList.style.display = 'none';
+                eventList.innerHTML = '';
                 noEventsMessage.style.display = 'block';
+                eventsMessage.style.display = 'none';
             }
         } catch (error) {
             console.error('Error fetching events:', error);
         }
     };
 
-    // Функция для открытия меню создания события
-    const toggleCreateEventMenu = (selectedDate) => {
-        const isMenuVisible = createEventMenu.style.display === 'block';
-        createEventMenu.style.display = isMenuVisible ? 'none' : 'block';
-        blurredBackground.style.display = isMenuVisible ? 'none' : 'block';
-        if (selectedDate) {
-            displayedDateElement.textContent = selectedDate;
-        }
+    document.getElementById('update-cancelEventButton').onclick = () => {
+        document.getElementById('blurred-background-update').style.display = 'none'; // Скрыть фон
+        document.getElementById('createEventMenuUpf').style.display = 'none'; // Скрыть форму редактирования
     };
 
-    // Функция загрузки погоды для выбранной даты
+    // Функция для отображения/скрытия меню создания события
+const toggleCreateEventMenu = (selectedDate) => {
+    const isMenuVisible = createEventMenu.style.display === 'block';
+    createEventMenu.style.display = isMenuVisible ? 'none' : 'block';
+    blurredBackground.style.display = isMenuVisible ? 'none' : 'block';
+    if (selectedDate) {
+        document.getElementById('displayed-date-create').textContent = selectedDate; // Установите отображаемую дату
+        document.getElementById('selected-date-input').value = selectedDate; // Установите скрытое поле даты
+    }
+};
+
+    // Функция для получения погоды для заданной даты
     const fetchWeatherForDate = async (date) => {
         const weatherResultElement = document.getElementById('weather-result');
-        if (weatherResultElement) {
-            try {
-                const response = await axios.get('/weather', { params: { date } });
-                const weatherForecast = response.data.forecast || [];
-                weatherResultElement.innerHTML = weatherForecast.length ? weatherForecast.join('<br>') : 'No weather data available.';
-            } catch (error) {
-                weatherResultElement.textContent = 'Error retrieving weather. Check if your city is correct!';
-            }
+        if (!weatherResultElement) return;
+
+        try {
+            const response = await axios.get('/weather', { params: { date } });
+            const weatherForecast = response.data.forecast || [];
+            weatherResultElement.innerHTML = weatherForecast.length ? weatherForecast.join('<br>') : 'No weather data available.';
+        } catch (error) {
+            weatherResultElement.textContent = 'Error retrieving weather data!';
         }
     };
 
-    // Функция для создания карточки события
-    function createEventCard(event) {
-        const eventCard = document.createElement("div");
-        eventCard.classList.add("event-card");
+window.editEvent = async (eventId) => {
+    const eventData = await fetch(`/get_event_for_update/${eventId}`);
+    const event = await eventData.json();
 
-        eventCard.innerHTML = `
-            <h3>${event.name}</h3>
-            <p><strong>Time:</strong> ${event.event_time}</p>
-            <p><strong>Description:</strong> ${event.description}</p>
-            <p><strong>Category:</strong> ${event.category ? "Outdoor" : "Indoor"}</p>
-        `;
+    document.getElementById('update-event-id').value = event.id;
+    document.getElementById('update-selected-date-input').value = event.event_date; // Установите скрытое поле даты
+    document.getElementById('displayed-date-update').textContent = event.event_date; // Установите отображаемую дату
+    document.getElementById('update-event-name').value = event.name;
+    document.getElementById('update-event_time').value = event.event_time;
+    document.getElementById('update-event-description').value = event.description;
 
-        document.getElementById("events-message").appendChild(eventCard);
+    // Установка значения категории
+    if (event.category) {
+        document.getElementById('update-category-indoor').checked = true;
+    } else {
+        document.getElementById('update-category-outdoor').checked = true;
     }
+
+    // Отображение формы редактирования
+    document.getElementById('blurred-background-update').style.display = 'block';
+    document.getElementById('createEventMenuUpf').style.display = 'block';
+};
+
+    // Функция для удаления события
+    window.deleteEvent = async (eventId) => {
+        const confirmDelete = confirm("Are you sure you want to delete this event?");
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch("/delete_event", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    event_id: eventId,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                fetchEventsForDate(selectedDateElement.textContent); // обновляем список событий
+            } else {
+                alert(`Error: ${data.detail}`);
+            }
+        } catch (error) {
+            console.error("Error deleting event:", error);
+            alert("Failed to delete event.");
+        }
+    };
+
+    function createEvent(eventData) {
+    // Отправка данных для создания события
+    $.ajax({
+        url: '/create_event',
+        method: 'POST',
+        data: eventData,
+        success: function(response) {
+            // Закрытие меню создания события
+            closeEventCreationMenu();
+
+            // Повторный запрос на получение событий
+            getEvents();
+        },
+        error: function(error) {
+            console.error('Ошибка при создании события:', error);
+        }
+    });
+}
+
+function closeEventCreationMenu() {
+    // Логика для закрытия меню
+    $('#eventCreationMenu').hide();
+}
+
+function getEvents() {
+    $.ajax({
+        url: '/get_event',
+        method: 'GET',
+        success: function(events) {
+            // Обработка полученных событий
+            displayEvents(events);
+        },
+        error: function(error) {
+            console.error('Ошибка при получении событий:', error);
+        }
+    });
+}
 
     // Инициализация календаря
     const calendarEl = document.getElementById('calendar');
@@ -125,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectedDateElement.textContent = selectedDate;
                 localStorage.setItem('selectedDate', selectedDate);
                 fetchWeatherForDate(selectedDate);
-                fetchEventsForDateWithUIUpdate(selectedDate);
+                fetchEventsForDate(selectedDate);
                 toggleDateHighlight(info.dayEl);
             },
         });
@@ -135,19 +206,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const lastSelectedDate = localStorage.getItem('selectedDate') || today;
         selectedDateElement.textContent = lastSelectedDate;
         fetchWeatherForDate(lastSelectedDate);
-        fetchEventsForDateWithUIUpdate(lastSelectedDate);
+        fetchEventsForDate(lastSelectedDate);
     }
 
-    // Подсветка выбранной даты в календаре
-    const toggleDateHighlight = (dayElement) => {
-        const previouslySelectedDay = document.querySelector('.fc-day.fc-day-selected');
-        if (previouslySelectedDay) {
-            previouslySelectedDay.classList.remove('fc-day-selected');
-        }
-        dayElement.classList.add('fc-day-selected');
-    };
-
-    // Обработчик отправки формы создания событий
+        // Обработчик формы создания события
     eventForm?.addEventListener('submit', (event) => {
         event.preventDefault();
         const selectedDate = displayedDateElement.textContent;
@@ -155,57 +217,28 @@ document.addEventListener('DOMContentLoaded', function () {
         eventForm.submit();
     });
 
-    // Обработчик открытия меню создания событий (большая кнопка)
+    // Функция для выделения выбранной даты
+    const toggleDateHighlight = (dayElement) => {
+        document.querySelectorAll('.fc-day-selected').forEach(el => el.classList.remove('fc-day-selected'));
+        dayElement.classList.add('fc-day-selected');
+    };
+
     createEventButton?.addEventListener('click', () => {
         const selectedDate = selectedDateElement.textContent || today;
         toggleCreateEventMenu(selectedDate);
     });
 
-    // Обработчик закрытия меню создания событий
+    // Открытие меню создания события для кнопки без событий
+    createEventButtonNoEvents?.addEventListener('click', () => {
+        const selectedDate = selectedDateElement.textContent || today;
+        toggleCreateEventMenu(selectedDate);
+    });
+
+    // Закрытие меню создания события
     document.getElementById('cancelEventButton')?.addEventListener('click', (e) => {
         e.preventDefault();
         toggleCreateEventMenu();
     });
-
-    if (createEventButtonSmall) {
-        createEventButtonSmall.addEventListener('click', () => {
-            createEventButton.click();
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        flatpickr("#event-time-picker", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true
-        });
-    });
-
-    // Загружаем все события при загрузке страницы
-    const fetchAllEvents = async () => {
-        try {
-            const response = await axios.get('/get_events');  // Замените на правильный эндпоинт
-            const events = response.data.events;
-
-            if (events.length > 0) {
-                noEventsMessage.style.display = 'none';
-                createEventButton.style.display = 'none';
-                createEventButtonSmall.style.display = 'block';
-
-                events.forEach(event => {
-                    createEventCard(event);  // создаем карточки для всех событий
-                });
-            } else {
-                noEventsMessage.style.display = 'block';
-                createEventButton.style.display = 'block';
-                createEventButtonSmall.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        }
-    };
-
-    // Загрузка всех событий при загрузке страницы
-    fetchAllEvents();
 });
+
+

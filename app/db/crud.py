@@ -106,7 +106,7 @@ class EventCRUD:
             return event
         except SQLAlchemyError as e:
             await db.rollback()
-            return {"error": f"Database error: {str(e)}"}
+            return {"error": f"Database error in create_event: {str(e)}"}
 
     @staticmethod
     async def update_event(db: AsyncSession,
@@ -142,7 +142,7 @@ class EventCRUD:
 
         except SQLAlchemyError as e:
             await db.rollback()
-            return {"error": f"Database error: {str(e)}"}
+            return {"error": f"Database error in update_event: {str(e)}"}
 
     @staticmethod
     async def delete_event(db: AsyncSession, event_id: int, user_id: int):
@@ -164,7 +164,7 @@ class EventCRUD:
 
         except SQLAlchemyError as e:
             await db.rollback()
-            return {"error": f"Database error: {str(e)}"}
+            return {"error": f"Database error in delete_event: {str(e)}"}
 
     @staticmethod
     async def get_event(db: AsyncSession, user_id: int, event_date: date):
@@ -181,4 +181,13 @@ class EventCRUD:
             return events
 
         except SQLAlchemyError as e:
-            return {"error": f"Database error: {str(e)}"}
+            return {"error": f"Database error in get_event: {str(e)}"}
+
+    @staticmethod
+    async def get_event_id(db: AsyncSession, event_id: int):
+        try:
+            result = await db.execute(select(DataEvent).where(DataEvent.id == event_id))
+            event = result.scalar_one_or_none()
+            return event
+        except SQLAlchemyError as e:
+            return {"error": f"Database error in get_event_id: {str(e)}"}
