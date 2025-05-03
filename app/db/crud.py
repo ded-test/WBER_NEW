@@ -5,22 +5,20 @@ from app.db.models import DataUser, DataEvent
 from datetime import date, time
 from typing import Union
 
+
 class UserCRUD:
     @staticmethod
-    async def create_user(db: AsyncSession,
-                          username: str,
-                          mail: str,
-                          city: str,
-                          password: bytes,
-                          salt: bytes
-                        ):
+    async def create_user(
+        db: AsyncSession,
+        username: str,
+        mail: str,
+        city: str,
+        password: bytes,
+        salt: bytes,
+    ):
         try:
             user = DataUser(
-                username=username,
-                mail=mail,
-                city=city,
-                password=password,
-                salt=salt
+                username=username, mail=mail, city=city, password=password, salt=salt
             )
             db.add(user)
             await db.commit()
@@ -34,7 +32,9 @@ class UserCRUD:
 
     @staticmethod
     async def get_user(db: AsyncSession, identifier: Union[str, int]):
-        if isinstance(identifier, int) or (isinstance(identifier, str) and identifier.isdigit()):
+        if isinstance(identifier, int) or (
+            isinstance(identifier, str) and identifier.isdigit()
+        ):
             identifier = int(identifier)
             search_filter = DataUser.id == identifier
         else:
@@ -55,7 +55,9 @@ class UserCRUD:
 
     @staticmethod
     async def check_username(db: AsyncSession, username: str) -> bool:
-        result = await db.execute(select(DataUser).filter(DataUser.username == username))
+        result = await db.execute(
+            select(DataUser).filter(DataUser.username == username)
+        )
         return result.scalar() is not None
 
     @staticmethod
@@ -83,14 +85,15 @@ class UserCRUD:
 
 class EventCRUD:
     @staticmethod
-    async def create_event(db: AsyncSession,
-                           user_id: int,
-                           event_date: date,
-                           event_time: time,
-                           name: str,
-                           description: str,
-                           category: bool
-                        ):
+    async def create_event(
+        db: AsyncSession,
+        user_id: int,
+        event_date: date,
+        event_time: time,
+        name: str,
+        description: str,
+        category: bool,
+    ):
         try:
             event = DataEvent(
                 user_id=user_id,
@@ -98,7 +101,7 @@ class EventCRUD:
                 event_time=event_time,
                 name=name,
                 description=description,
-                category=category
+                category=category,
             )
             db.add(event)
             await db.commit()
@@ -109,17 +112,20 @@ class EventCRUD:
             return {"error": f"Database error in create_event: {str(e)}"}
 
     @staticmethod
-    async def update_event(db: AsyncSession,
-                           event_id: int,
-                           user_id: int,
-                           event_date: date,
-                           event_time: time,
-                           name: str,
-                           description: str,
-                           category: bool):
+    async def update_event(
+        db: AsyncSession,
+        event_id: int,
+        user_id: int,
+        event_date: date,
+        event_time: time,
+        name: str,
+        description: str,
+        category: bool,
+    ):
         try:
-            result = await db.execute(select(DataEvent).filter_by(
-                id=event_id, user_id=user_id))
+            result = await db.execute(
+                select(DataEvent).filter_by(id=event_id, user_id=user_id)
+            )
             event = result.scalars().first()
 
             if not event:
@@ -147,8 +153,9 @@ class EventCRUD:
     @staticmethod
     async def delete_event(db: AsyncSession, event_id: int, user_id: int):
         try:
-            result = await db.execute(select(DataEvent).filter_by(
-                id=event_id, user_id=user_id))
+            result = await db.execute(
+                select(DataEvent).filter_by(id=event_id, user_id=user_id)
+            )
             event = result.scalars().first()
 
             if not event:
@@ -159,8 +166,10 @@ class EventCRUD:
             await db.delete(event)
             await db.commit()
 
-            return {"message": "Event deleted successfully",
-                    "deleted_event": deleted_event}
+            return {
+                "message": "Event deleted successfully",
+                "deleted_event": deleted_event,
+            }
 
         except SQLAlchemyError as e:
             await db.rollback()
@@ -171,10 +180,7 @@ class EventCRUD:
         try:
             events = await db.execute(
                 select(DataEvent)
-                .where(
-                    DataEvent.user_id == user_id,
-                    DataEvent.event_date == event_date
-                )
+                .where(DataEvent.user_id == user_id, DataEvent.event_date == event_date)
                 .order_by(DataEvent.event_time)
             )
             events = events.scalars().all()

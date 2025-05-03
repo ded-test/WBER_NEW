@@ -6,12 +6,13 @@ from fastapi.responses import RedirectResponse
 
 router = APIRouter()
 
+
 @router.get("/settings")
 async def read_settings(
     request: Request,
     user_id: str = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-    ):
+    db: AsyncSession = Depends(get_db),
+):
 
     city = await UserCRUD.get_city(db, user_id)
 
@@ -22,6 +23,7 @@ async def read_settings(
     return templates.TemplateResponse(
         "settings.html", {"request": request, "city": city}
     )
+
 
 @router.post("/logout")
 async def logout():

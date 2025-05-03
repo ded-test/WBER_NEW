@@ -10,11 +10,12 @@ engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=True)
 
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
         yield session
 
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-

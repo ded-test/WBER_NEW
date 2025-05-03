@@ -8,15 +8,16 @@ from app.db.session import get_db
 
 router = APIRouter()
 
+
 @router.get("/weather")
 async def get_weather(
     request: Request,
     date: str,
     user_id: str = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-    ):
+    db: AsyncSession = Depends(get_db),
+):
 
-    city = await UserCRUD.get_city(db,user_id)
+    city = await UserCRUD.get_city(db, user_id)
 
     if not city:
         raise HTTPException(status_code=404, detail="User's city not found.")

@@ -13,12 +13,14 @@ router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
+
 def create_access_token(user_id: int, expires_delta: timedelta = timedelta(hours=168)):
     to_encode = {"sub": str(user_id)}
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
     return encoded_jwt
+
 
 def decode_access_token(token: str):
     try:
@@ -28,7 +30,6 @@ def decode_access_token(token: str):
         raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
-
 
 
 async def get_current_user(request: Request):
@@ -51,10 +52,13 @@ async def get_current_user(request: Request):
     except HTTPException:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
+
 @router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request,
-                    user_id: int = Depends(get_current_user),
-                    db: AsyncSession = Depends(get_db)):
+async def read_root(
+    request: Request,
+    user_id: int = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     username = "Sign In"
     city = "City"
 
@@ -76,15 +80,20 @@ async def read_root(request: Request,
         },
     )
 
+
 @router.get("/login")
 async def read_login(request: Request):
     from ..main import templates
+
     return templates.TemplateResponse("login.html", {"request": request})
+
 
 @router.get("/registration")
 async def read_registration(request: Request):
     from ..main import templates
+
     return templates.TemplateResponse("registration.html", {"request": request})
+
 
 @router.post("/login")
 async def submit_login(request: Request, db: AsyncSession = Depends(get_db)):
@@ -101,7 +110,7 @@ async def submit_login(request: Request, db: AsyncSession = Depends(get_db)):
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=False, #defalt True, False for localhost
+            secure=False,  # defalt True, False for localhost
             samesite="lax",
             max_age=86400,  # 1 day
         )
@@ -110,6 +119,7 @@ async def submit_login(request: Request, db: AsyncSession = Depends(get_db)):
         status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
     )
 
+
 @router.post("/register")
 async def submit_register(request: Request, db: AsyncSession = Depends(get_db)):
     form = await request.form()
@@ -117,7 +127,6 @@ async def submit_register(request: Request, db: AsyncSession = Depends(get_db)):
     city = form.get("city")
     mail = form.get("mail")
     password = form.get("password")
-
 
     if not all([username, city, mail, password]):
         raise HTTPException(status_code=400, detail="All fields are required")

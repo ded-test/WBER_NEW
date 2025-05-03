@@ -4,4 +4,10 @@ from .users import router as users_router
 from .events import router as events_router
 from .weather import router as weather_router
 
-__all__ = ["auth_router","cities_router","users_router","events_router","weather_router"]
+__all__ = [
+    "auth_router",
+    "cities_router",
+    "users_router",
+    "events_router",
+    "weather_router",
+]

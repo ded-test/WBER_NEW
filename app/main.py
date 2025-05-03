@@ -22,11 +22,14 @@ app.mount("/static", StaticFiles(directory="./static"), name="static")
 class AuthRedirectException(Exception):
     pass
 
+
 @app.exception_handler(HTTPException)
 async def auth_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code == 401:
         return RedirectResponse(url="/login")
     return exc
+
+
 if __name__ == "__main__":
     asyncio.run(create_tables())
     uvicorn.run("main:app", reload=True, host="127.0.0.1", port=8000)

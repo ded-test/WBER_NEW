@@ -8,6 +8,7 @@ from .auth import get_current_user
 
 router = APIRouter()
 
+
 @router.get("/cities", response_class=JSONResponse)
 async def get_cities(prefix: str = ""):
     results = [
@@ -15,12 +16,13 @@ async def get_cities(prefix: str = ""):
     ]
     return {"cities": results[:5]}
 
+
 @router.post("/update-city")
 async def change_city(
-        request: Request,
-        user_id: str = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db)
-    ):
+    request: Request,
+    user_id: str = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     form = await request.form()
     new_city = form.get("city")
 

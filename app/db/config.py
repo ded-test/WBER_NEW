@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
 
+
 class DBSettings(BaseModel):
     DATABASE_URL: str
 
@@ -20,5 +21,6 @@ class DBSettings(BaseModel):
 
         DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
         return cls(DATABASE_URL=DATABASE_URL)
+
 
 db_settings = DBSettings.load()

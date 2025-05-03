@@ -1,8 +1,18 @@
-from sqlalchemy import Column, Integer, String, LargeBinary, ForeignKey, Date, Boolean, Time
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    LargeBinary,
+    ForeignKey,
+    Date,
+    Boolean,
+    Time,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+
 
 class DataUser(Base):
     __tablename__ = "user"
@@ -16,7 +26,8 @@ class DataUser(Base):
 
     events = relationship("DataEvent", back_populates="owner")
 
-class DataEvent (Base):
+
+class DataEvent(Base):
     __tablename__ = "event"
 
     id = Column(Integer, primary_key=True)
