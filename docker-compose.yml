@@ -1,9 +1,0 @@
-version: '3'
-
-services:
-  app:
-    build: .
-  postgres:
-    image: postgres
-
-# fix error Set in collection -> .abc
